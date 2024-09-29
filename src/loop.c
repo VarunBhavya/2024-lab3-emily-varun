@@ -10,17 +10,8 @@ int do_loop(SemaphoreHandle_t semaphore,
     if (xSemaphoreTake(semaphore, timeout) == pdFALSE)
         return pdFALSE;  
 
-    // Main Thread
-    if (src == "main") {
-        (*counter)++;
-    }
-
-    // Side Thread
-    else if (src="side"){
-        *counter = (*counter) + 1;
-    }
-
     {
+        (*counter)++;
         printf("hello world from %s! Count %d\n", src, *counter);
         xSemaphoreGive(semaphore);
     }

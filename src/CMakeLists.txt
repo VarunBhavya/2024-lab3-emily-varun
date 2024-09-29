@@ -1,6 +1,7 @@
 # This is the main binary. List your C files here.
 add_executable(thread
     thread.c
+    loop.c
     )
 
 pico_set_program_name(thread "test")

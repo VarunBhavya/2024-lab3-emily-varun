@@ -22,7 +22,7 @@ void side_thread(void *params)
 {
 	while (1) {
         vTaskDelay(100);
-        do_loop(semaphore, &counter, "side", 500);
+        do_loop(semaphore, &counter, "side", 1000);
 	}
 }
 
@@ -31,7 +31,8 @@ void main_thread(void *params)
 	while (1) {
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, on);
         vTaskDelay(100);
-        do_loop(semaphore, &counter, "main", 500);
+        // Increased Timeout to 1 second to prevent starving the system
+        do_loop(semaphore, &counter, "main", 1000);
         on = !on;
 	}
 }
