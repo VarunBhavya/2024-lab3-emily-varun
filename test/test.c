@@ -23,13 +23,15 @@ void activity_2(void){
     semaphore = xSemaphoreCreateCounting(1, 1);
 
     // Testing Failed Condition
+    printf("Taking allocated resource and running task");
     xSemaphoreTake(semaphore, portMAX_DELAY);
     status = do_loop(semaphore, &counter, "activity_2", DELAY);
     TEST_ASSERT_NOT_EQUAL_INT(pdTRUE, status);
     TEST_ASSERT_NOT_EQUAL(counter, counter++);
 
-    //Testing Pass condition
+    // Testing Pass condition
     counter = 0;
+    printf("Releasing allocated resource and running task");
     xSemaphoreGive(semaphore);
     status = do_loop(semaphore, &counter, "activity_2", DELAY);
     TEST_ASSERT_EQUAL_INT(pdTRUE, status);
