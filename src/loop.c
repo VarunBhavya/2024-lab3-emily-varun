@@ -18,3 +18,24 @@ int do_loop(SemaphoreHandle_t semaphore,
     
     return pdTRUE;
 }
+
+void deadlock(void *args)
+{
+    struct DeadlockArgs *dargs = (struct DeadlockArgs *)args;
+    dargs->state_1 = 1;
+    // Locking A
+    {
+        dargs->state_2 = 1;
+        xSemaphoreTake(dargs->lock_A, portMAX_DELAY);
+        vTaskDelay(100);
+        {
+            // Locking B
+            dargs->state_3 = 1;
+            xSemaphoreTake(dargs->lock_B, portMAX_DELAY);
+            vTaskDelay(100);
+        }
+        xSemaphoreGive(dargs->lock_B);
+    }
+    xSemaphoreGive(dargs->lock_A);
+    vTaskSuspend(NULL);
+}

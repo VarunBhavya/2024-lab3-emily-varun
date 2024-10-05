@@ -11,6 +11,13 @@
 #include "loop.h"
 
 #define DELAY 1000
+#define STATE_STATUS 1
+
+#define TEST_RUNNER_PRIORITY ( tskIDLE_PRIORITY + 5UL )
+#define LEFT_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
+#define LEFT_TASK_PRIORITY ( TEST_RUNNER_PRIORITY - 1UL )
+#define RIGHT_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
+#define RIGHT_TASK_PRIORITY ( TEST_RUNNER_PRIORITY - 1UL )
 
 void setUp(void) {}
 
@@ -38,14 +45,57 @@ void activity_2(void){
     TEST_ASSERT_EQUAL(counter, counter++);
 }
 
+void deadlock_activity(void)
+{
+    TaskHandle_t left_thread, right_thread;
+    SemaphoreHandle_t left = xSemaphoreCreateCounting(1, 1);
+    SemaphoreHandle_t right = xSemaphoreCreateCounting(1, 1);
+
+    struct DeadlockArgs left_args = {left, right, 0, 0, 0};
+    struct DeadlockArgs right_args = {right, left, 0, 0, 0};
+
+    BaseType_t left_status =
+        xTaskCreate(deadlock, "Left", LEFT_TASK_STACK_SIZE,
+                    (void *)&left_args, LEFT_TASK_PRIORITY, &left_thread);
+
+    BaseType_t right_status =
+        xTaskCreate(deadlock, "Right", RIGHT_TASK_STACK_SIZE,
+                    (void *)&right_args, RIGHT_TASK_PRIORITY, &right_thread);
+
+    vTaskDelay(DELAY);
+
+    TEST_ASSERT_EQUAL_INT(uxSemaphoreGetCount(left), 0);
+    TEST_ASSERT_EQUAL_INT(uxSemaphoreGetCount(right), 0);
+    TEST_ASSERT_EQUAL_INT(left_args.state_1, STATE_STATUS);
+    TEST_ASSERT_EQUAL_INT(left_args.state_2, STATE_STATUS);
+    TEST_ASSERT_EQUAL_INT(left_args.state_3, STATE_STATUS);
+    TEST_ASSERT_EQUAL_INT(right_args.state_1, STATE_STATUS);
+    TEST_ASSERT_EQUAL_INT(right_args.state_2, STATE_STATUS);
+    TEST_ASSERT_EQUAL_INT(right_args.state_3, STATE_STATUS);
+
+    vTaskDelete(left_thread);
+    vTaskDelete(right_thread);
+}
+
+void runner_thread(__unused void *args)
+{
+    for (;;) {
+        printf("Start tests\n");
+        UNITY_BEGIN();
+        RUN_TEST(activity_2);
+        RUN_TEST(deadlock_activity);
+        UNITY_END();
+        sleep_ms(10000);
+    }
+}
+
 int main (void)
 {
     stdio_init_all();
-    sleep_ms(5000); // Give time for TTY to attach.
-    printf("Start tests\n");
-    UNITY_BEGIN();
-    RUN_TEST(activity_2);
-    // RUN_TEST(test_multiplication);
     sleep_ms(5000);
-    return UNITY_END();
+    hard_assert(cyw43_arch_init() == PICO_OK);
+    xTaskCreate(runner_thread, "TestRunner",
+                configMINIMAL_STACK_SIZE, NULL, TEST_RUNNER_PRIORITY, NULL);
+    vTaskStartScheduler();
+	return 0;
 }

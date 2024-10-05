@@ -13,5 +13,15 @@ int do_loop(SemaphoreHandle_t semaphore,
             const char *src,
             TickType_t timeout);
 
+struct DeadlockArgs {
+    SemaphoreHandle_t lock_A;
+    SemaphoreHandle_t lock_B;
+    int state_1;
+    int state_2;
+    int state_3;
+};
+
+void deadlock(void *);
+
 
 #endif

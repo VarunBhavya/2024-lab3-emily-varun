@@ -40,6 +40,8 @@
     "files.associations": {
         "loop.h": "c",
         "semphr.h": "c",
-        "cyw43_arch.h": "c"
+        "cyw43_arch.h": "c",
+        "task.h": "c",
+        "freertos.h": "c"
     }
 }
