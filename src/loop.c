@@ -39,3 +39,18 @@ void deadlock(void *args)
     xSemaphoreGive(dargs->lock_A);
     vTaskSuspend(NULL);
 }
+
+
+int orphaned_lock(SemaphoreHandle_t semaphore, TickType_t timeout, int *numerator, int *denominator)
+{
+    if (xSemaphoreTake(semaphore, timeout) == pdFALSE)
+        return pdFALSE;
+
+    if (*numerator % *denominator != 0){
+        printf("Number not divisible");
+        return 0;
+    }
+    printf("Number divisible");
+    xSemaphoreGive(semaphore);
+    return pdTRUE;
+}
