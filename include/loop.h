@@ -23,5 +23,6 @@ struct DeadlockArgs {
 
 void deadlock(void *);
 int orphaned_lock(SemaphoreHandle_t semaphore, TickType_t timeout, int *numerator, int *denominator);
+int un_orphaned_lock(SemaphoreHandle_t semaphore, TickType_t timeout, int *numerator, int *denominator);
 
 #endif

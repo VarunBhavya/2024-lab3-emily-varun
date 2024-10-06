@@ -47,10 +47,25 @@ int orphaned_lock(SemaphoreHandle_t semaphore, TickType_t timeout, int *numerato
         return pdFALSE;
 
     if (*numerator % *denominator != 0){
-        printf("Number not divisible");
+        printf("Number not divisible\n");
         return 0;
     }
-    printf("Number divisible");
+    printf("Number divisible\n");
+    xSemaphoreGive(semaphore);
+    return pdTRUE;
+}
+
+int un_orphaned_lock(SemaphoreHandle_t semaphore, TickType_t timeout, int *numerator, int *denominator)
+{
+    if (xSemaphoreTake(semaphore, timeout) == pdFALSE)
+        return pdFALSE;
+
+    if (*numerator % *denominator != 0){
+        printf("Number not divisible\n");
+    }
+    else if(*numerator % *denominator == 0){
+        printf("Number divisible\n");
+    }
     xSemaphoreGive(semaphore);
     return pdTRUE;
 }

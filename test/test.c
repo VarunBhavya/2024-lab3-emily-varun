@@ -88,20 +88,38 @@ void test_orphaned_lock(void){
 
     numerator = 4;
     denominator = 3;
-    
+
     result = orphaned_lock(semaphore, 500, &numerator, &denominator);
     TEST_ASSERT_NOT_EQUAL_INT(pdTRUE, result);
     TEST_ASSERT_EQUAL_INT(0, uxSemaphoreGetCount(semaphore));
 }
 
+void test_un_orphaned_lock(void){
+    int numerator = 4;
+    int denominator = 2; 
+    SemaphoreHandle_t semaphore = xSemaphoreCreateCounting(1, 1);
+
+    int result = un_orphaned_lock(semaphore, 500, &numerator, &denominator);
+    TEST_ASSERT_EQUAL_INT(pdTRUE, result);
+    TEST_ASSERT_EQUAL_INT(1, uxSemaphoreGetCount(semaphore));
+
+    numerator = 4;
+    denominator = 3;
+
+    result = un_orphaned_lock(semaphore, 500, &numerator, &denominator);
+    TEST_ASSERT_NOT_EQUAL_INT(pdFALSE, result);
+    TEST_ASSERT_EQUAL_INT(1, uxSemaphoreGetCount(semaphore));
+}
+
 void runner_thread(__unused void *args)
 {
-    for (;;) {
+    for (int i = 0; i<=3; i++) {
         printf("Start tests\n");
         UNITY_BEGIN();
         RUN_TEST(activity_2);
         RUN_TEST(deadlock_activity);
         RUN_TEST(test_orphaned_lock);
+        RUN_TEST(test_un_orphaned_lock);
         UNITY_END();
         sleep_ms(10000);
     }
