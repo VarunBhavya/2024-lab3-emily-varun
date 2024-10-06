@@ -22,6 +22,7 @@ int do_loop(SemaphoreHandle_t semaphore,
 void deadlock(void *args)
 {
     struct DeadlockArgs *dargs = (struct DeadlockArgs *)args;
+    // Initially all states are passed as 0 but as the function moves through different locking scenarious we maske it true i.e 1
     dargs->state_1 = 1;
     // Locking A
     {
@@ -46,6 +47,7 @@ int orphaned_lock(SemaphoreHandle_t semaphore, TickType_t timeout, int *numerato
     if (xSemaphoreTake(semaphore, timeout) == pdFALSE)
         return pdFALSE;
 
+    // We try to not clear semaphore and return 0 to create a deadlock situation if numbers are not divisible
     if (*numerator % *denominator != 0){
         printf("Number not divisible\n");
         return 0;
@@ -59,7 +61,7 @@ int un_orphaned_lock(SemaphoreHandle_t semaphore, TickType_t timeout, int *numer
 {
     if (xSemaphoreTake(semaphore, timeout) == pdFALSE)
         return pdFALSE;
-
+    // We fixed the bug by simply adding an if-else statement and make sure the function always release the resource.
     if (*numerator % *denominator != 0){
         printf("Number not divisible\n");
     }
